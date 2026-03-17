@@ -437,5 +437,13 @@ def health():
 # ─────────────────────────────────────────────
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
+    if not GROQ_API_KEY:
+        print("\n" + "="*60)
+        print("⚠️  WARNING: GROQ_API_KEY is not configured!")
+        print("="*60)
+        print("  1. Add GROQ_API_KEY=gsk_... to your .env file")
+        print("  2. Get your key from https://console.groq.com/")
+        print("="*60 + "\n")
+
+    init_db()
+    app.run(debug=True, host="0.0.0.0", port=5000)
