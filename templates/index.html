@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAHADEV AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <style>
+    :root {
+      --bg:        #080b0f;
+      --surface:   #0e1318;
+      --surface2:  #141b22;
+      --surface3:  #1a2330;
+      --border:    rgba(255,255,255,0.055);
+      --border-hi: rgba(99,210,175,0.25);
+      --text:      #dde4eb;
+      --text-2:    #6d7d8e;
+      --text-3:    #3a4a58;
+      --green:     #63d2af;
+      --green-dk:  #3aaf8a;
+      --green-glow:rgba(99,210,175,0.15);
+      --green-dim: rgba(99,210,175,0.06);
+      --user-bg:   #0d1e19;
+      --user-brd:  rgba(99,210,175,0.2);
+      --sidebar-w: 268px;
+      --radius:    12px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text)}
+
+    /* ── Layout ── */
+    #app{display:flex;height:100vh;overflow:hidden}
+
+    /* ── Sidebar ── */
+    #sidebar{
+      width:var(--sidebar-w);background:var(--surface);
+      border-right:1px solid var(--border);
+      display:flex;flex-direction:column;flex-shrink:0;
+      transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);z-index:100
+    }
+    .sb-head{
+      padding:16px 16px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:10px
+    }
+    .sb-logo{
+      width:34px;height:34px;
+      background:linear-gradient(135deg,var(--green),var(--green-dk));
+      border-radius:9px;display:flex;align-items:center;justify-content:center;
+      font-size:16px;flex-shrink:0;
+      box-shadow:0 0 16px var(--green-glow);
+      animation:breathe 4s ease-in-out infinite
+    }
+    @keyframes breathe{0%,100%{box-shadow:0 0 16px var(--green-glow)}50%{box-shadow:0 0 28px rgba(99,210,175,0.3)}}
+    .sb-brand{font-size:14px;font-weight:700;letter-spacing:-0.3px}
+    .sb-brand span{color:var(--green)}
+
+    .new-chat-btn{
+      margin:14px 12px 6px;padding:10px 14px;
+      background:transparent;border:1px solid var(--border-hi);
+      border-radius:9px;color:var(--text);
+      font-family:'Outfit',sans-serif;font-size:13.5px;font-weight:500;
+      cursor:pointer;display:flex;align-items:center;gap:8px;
+      transition:all 0.2s;width:calc(100% - 24px)
+    }
+    .new-chat-btn:hover{background:var(--surface2);border-color:var(--green);color:var(--green)}
+
+    .sb-section{padding:12px 16px 4px;font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:1.2px;text-transform:uppercase}
+    .chat-history{flex:1;overflow-y:auto;padding:4px 8px}
+    .chat-history::-webkit-scrollbar{width:3px}
+    .chat-history::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+    .history-item{
+      padding:9px 10px;border-radius:8px;font-size:13px;color:var(--text-2);
+      cursor:pointer;display:flex;align-items:center;gap:8px;
+      transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .history-item:hover{background:var(--surface2);color:var(--text)}
+    .history-item.active{background:var(--green-dim);color:var(--green)}
+
+    .sb-footer{padding:12px;border-top:1px solid var(--border)}
+    .sb-user{
+      display:flex;align-items:center;gap:10px;padding:9px 12px;
+      background:var(--surface2);border-radius:9px;
+      border:1px solid var(--border);margin-bottom:8px
+    }
+    .sb-avatar{
+      width:28px;height:28px;border-radius:7px;
+      background:linear-gradient(135deg,var(--green),var(--green-dk));
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:700;color:#060d0a;flex-shrink:0
+    }
+    .sb-username{font-size:12.5px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sb-logout{
+      background:transparent;border:none;color:var(--text-3);cursor:pointer;
+      font-size:11px;padding:3px 6px;border-radius:5px;transition:color 0.15s;
+      font-family:'Outfit',sans-serif
+    }
+    .sb-logout:hover{color:var(--text)}
+    .model-badge{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;font-size:11.5px;color:var(--text-2);border:1px solid var(--border)}
+    .model-dot{width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;flex-shrink:0}
+    @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 6px var(--green)}50%{opacity:0.5;box-shadow:0 0 12px var(--green)}}
+
+    /* ── Main ── */
+    #main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+    /* ── Topbar ── */
+    #topbar{
+      height:54px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;padding:0 20px;gap:12px;
+      flex-shrink:0;background:var(--surface)
+    }
+    .topbar-title{font-size:13.5px;font-weight:600;color:var(--text-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .icon-btn{
+      width:34px;height:34px;border-radius:8px;background:transparent;
+      border:1px solid var(--border);color:var(--text-2);
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:all 0.15s
+    }
+    .icon-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border-hi)}
+    #menu-btn{display:none}
+
+    /* ── Messages ── */
+    #messages-wrap{flex:1;overflow-y:auto;scroll-behavior:smooth}
+    #messages-wrap::-webkit-scrollbar{width:4px}
+    #messages-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    #messages{max-width:800px;margin:0 auto;padding:32px 24px 24px}
+
+    /* ── Welcome ── */
+    #welcome{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:60vh;text-align:center;padding:40px 20px;
+      animation:fadeUp 0.6s ease both
+    }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .welcome-icon{
+      width:70px;height:70px;
+      background:linear-gradient(135deg,var(--green),var(--green-dk));
+      border-radius:20px;display:flex;align-items:center;justify-content:center;
+      font-size:32px;margin-bottom:28px;
+      box-shadow:0 0 40px var(--green-glow),0 0 80px rgba(99,210,175,0.07);
+      animation:floatIcon 3s ease-in-out infinite
+    }
+    @keyframes floatIcon{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .welcome-title{font-size:clamp(22px,4vw,32px);font-weight:800;letter-spacing:-1px;margin-bottom:10px;line-height:1.1}
+    .welcome-title .hi{color:var(--green)}
+    .welcome-sub{font-size:14.5px;color:var(--text-2);max-width:400px;line-height:1.7;margin-bottom:40px;font-weight:300}
+
+    .suggestions{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:560px}
+    .suggestion{
+      padding:16px 18px;background:var(--surface);
+      border:1px solid var(--border);border-radius:12px;
+      font-size:13px;color:var(--text-2);cursor:pointer;text-align:left;
+      transition:all 0.2s;line-height:1.5;position:relative;overflow:hidden
+    }
+    .suggestion::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--green-dim),transparent);opacity:0;transition:opacity 0.2s}
+    .suggestion:hover{background:var(--surface2);border-color:var(--border-hi);color:var(--text);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+    .suggestion:hover::before{opacity:1}
+    .suggestion strong{display:block;color:var(--text);font-size:13.5px;margin-bottom:3px;font-weight:600}
+
+    /* ── Messages ── */
+    .msg-row{display:flex;gap:14px;margin-bottom:28px;animation:msgIn 0.3s ease both}
+    @keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .msg-avatar{
+      width:32px;height:32px;border-radius:9px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:13px;margin-top:2px
+    }
+    .msg-avatar.ai{background:linear-gradient(135deg,var(--green),var(--green-dk));box-shadow:0 0 14px var(--green-glow)}
+    .msg-avatar.user{background:var(--surface2);border:1px solid var(--border-hi);font-size:11px;font-weight:700;color:var(--green)}
+    .msg-content{flex:1;min-width:0}
+    .msg-name{font-size:11.5px;font-weight:700;color:var(--text-3);margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase}
+    .msg-row.user .msg-name{color:var(--green);opacity:0.7}
+    .msg-body{font-size:14.5px;line-height:1.75;color:var(--text)}
+    .msg-row.user .msg-body{background:var(--user-bg);border:1px solid var(--user-brd);padding:13px 17px;border-radius:4px 14px 14px 14px;display:inline-block;max-width:100%}
+
+    /* Markdown */
+    .msg-body p{margin-bottom:10px}.msg-body p:last-child{margin-bottom:0}
+    .msg-body h1,.msg-body h2,.msg-body h3{font-family:'Outfit',sans-serif;margin:18px 0 8px;font-weight:700;color:#dde4eb}
+    .msg-body h1{font-size:20px}.msg-body h2{font-size:17px}.msg-body h3{font-size:15px}
+    .msg-body ul,.msg-body ol{padding-left:22px;margin-bottom:10px}
+    .msg-body li{margin-bottom:4px}
+    .msg-body strong{color:#e8edf2;font-weight:600}
+    .msg-body em{color:#aabbc9}
+    .msg-body code:not(pre code){background:#142030;border:1px solid rgba(99,210,175,0.15);padding:2px 7px;border-radius:5px;font-size:12.5px;font-family:'JetBrains Mono',monospace;color:#63d2af}
+    .msg-body pre{background:#0a1018;border:1px solid var(--border);border-radius:12px;margin:14px 0;overflow:hidden}
+    .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0e161f;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text-2);font-family:'JetBrains Mono',monospace}
+    .copy-code{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text-2);padding:3px 10px;font-size:10.5px;cursor:pointer;transition:all 0.15s;font-family:'Outfit',sans-serif}
+    .copy-code:hover{background:var(--surface2);color:var(--green);border-color:var(--border-hi)}
+    .msg-body pre code{padding:14px 16px;display:block;font-size:13px;overflow-x:auto;font-family:'JetBrains Mono',monospace}
+    .msg-body blockquote{border-left:3px solid var(--green);padding:6px 0 6px 16px;color:var(--text-2);margin:10px 0;font-style:italic}
+    .msg-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+    .msg-body th,.msg-body td{border:1px solid var(--border);padding:9px 13px;text-align:left}
+    .msg-body th{background:var(--surface2);font-weight:600;color:var(--green)}
+    .msg-body tr:hover td{background:rgba(99,210,175,0.03)}
+
+    /* Typing */
+    .typing-dot{display:inline-flex;gap:5px;align-items:center;padding:10px 0 2px}
+    .typing-dot span{width:7px;height:7px;background:var(--green);border-radius:50%;animation:bounce 1.2s infinite;opacity:0.6}
+    .typing-dot span:nth-child(2){animation-delay:0.2s}
+    .typing-dot span:nth-child(3){animation-delay:0.4s}
+    @keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:0.3}40%{transform:scale(1);opacity:1}}
+
+    /* ── Input Area ── */
+    #input-area{padding:14px 20px 18px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0}
+    .input-wrap{max-width:800px;margin:0 auto;position:relative}
+    .input-box{
+      display:flex;align-items:flex-end;
+      background:var(--bg);border:1px solid var(--border-hi);
+      border-radius:14px;padding:12px 14px 12px 18px;gap:10px;
+      transition:border-color 0.2s,box-shadow 0.2s
+    }
+    .input-box:focus-within{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+    #chat-input{
+      flex:1;background:transparent;border:none;outline:none;
+      color:var(--text);font-family:'Outfit',sans-serif;font-size:14.5px;
+      line-height:1.55;resize:none;max-height:180px;min-height:24px;scrollbar-width:none
+    }
+    #chat-input::-webkit-scrollbar{display:none}
+    #chat-input::placeholder{color:var(--text-3)}
+    #send-btn{
+      width:38px;height:38px;border-radius:10px;
+      background:var(--green);border:none;color:#060d0a;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;transition:all 0.2s;box-shadow:0 0 16px var(--green-glow)
+    }
+    #send-btn:hover{background:#7ae0be;transform:scale(1.05);box-shadow:0 0 24px rgba(99,210,175,0.4)}
+    #send-btn:active{transform:scale(0.95)}
+    #send-btn:disabled{background:#1a2330;box-shadow:none;cursor:not-allowed;transform:none}
+    .input-hint{text-align:center;font-size:11px;color:var(--text-3);margin-top:8px;letter-spacing:0.2px}
+
+    /* ── Toast ── */
+    #toast{
+      position:fixed;bottom:100px;left:50%;
+      transform:translateX(-50%) translateY(16px);
+      background:var(--surface2);border:1px solid var(--border-hi);
+      color:var(--green);padding:8px 18px;border-radius:30px;
+      font-size:13px;opacity:0;pointer-events:none;
+      transition:all 0.3s;z-index:999;font-weight:500
+    }
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* ── Scroll button ── */
+    #scroll-btn{
+      position:absolute;bottom:84px;right:20px;
+      width:36px;height:36px;background:var(--surface2);
+      border:1px solid var(--border-hi);border-radius:50%;
+      color:var(--text-2);display:flex;align-items:center;justify-content:center;
+      cursor:pointer;opacity:0;pointer-events:none;transition:opacity 0.2s;z-index:50
+    }
+    #scroll-btn.visible{opacity:1;pointer-events:auto}
+    #scroll-btn:hover{background:var(--surface3);color:var(--green)}
+
+    /* Stream cursor */
+    .stream-cursor::after{content:'▋';color:var(--green);animation:blink 0.7s step-end infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+    /* Ripple */
+    .ripple{position:absolute;border-radius:50%;background:rgba(99,210,175,0.12);transform:scale(0);animation:rippleAnim 0.5s linear;pointer-events:none}
+    @keyframes rippleAnim{to{transform:scale(4);opacity:0}}
+
+    /* ── Mobile ── */
+    @media(max-width:700px){
+      :root{--sidebar-w:260px}
+      #sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%)}
+      #sidebar.open{transform:translateX(0);box-shadow:4px 0 30px rgba(0,0,0,0.6)}
+      #menu-btn{display:flex!important}
+      .suggestions{grid-template-columns:1fr}
+      .welcome-title{font-size:22px}
+      #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99}
+      #overlay.show{display:block}
+    }
+  </style>
+</head>
+<body>
+<div id="overlay"></div>
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">✦</div>
+      <span class="sb-brand">MAHADEV <span>AI</span></span>
+    </div>
+
+    <button class="new-chat-btn" onclick="newChat()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      New conversation
+    </button>
+
+    <div class="sb-section">Recent</div>
+    <div class="chat-history" id="chat-history"></div>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar" id="user-avatar">U</div>
+        <span class="sb-username" id="user-name">User</span>
+        <a href="/logout" class="sb-logout" title="Sign out">↩</a>
+      </div>
+      <div class="model-badge">
+        <div class="model-dot"></div>
+        <span>llama-3.3-70b-versatile</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <button class="icon-btn" id="menu-btn" onclick="toggleSidebar()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <span class="topbar-title" id="topbar-title">New conversation</span>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <button class="icon-btn" title="Clear chat" onclick="newChat()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="messages-wrap">
+      <div id="messages">
+        <div id="welcome">
+          <div class="welcome-icon">✦</div>
+          <div class="welcome-title"><span class="hi">MAHADEV AI</span></div>
+          <div class="welcome-title" style="font-size:clamp(18px,3vw,24px);color:var(--text-2);font-weight:300;margin-top:6px">How can I help you today?</div>
+          <p class="welcome-sub">Ask me anything — I can help with writing, coding, analysis, math, and much more.</p>
+          <div class="suggestions">
+            <div class="suggestion" onclick="useSuggestion(this)">
+              <strong>✍️ Help me write</strong>Draft a professional email or document
+            </div>
+            <div class="suggestion" onclick="useSuggestion(this)">
+              <strong>💻 Code review</strong>Debug or improve my code
+            </div>
+            <div class="suggestion" onclick="useSuggestion(this)">
+              <strong>📊 Explain a concept</strong>Break down complex topics simply
+            </div>
+            <div class="suggestion" onclick="useSuggestion(this)">
+              <strong>🔍 Research help</strong>Summarize and analyze information
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="scroll-btn" onclick="scrollToBottom()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </button>
+
+    <div id="input-area">
+      <div class="input-wrap">
+        <div class="input-box">
+          <textarea id="chat-input" placeholder="Message MAHADEV AI…" rows="1"
+            onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button id="send-btn" onclick="sendMessage()" title="Send message">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="input-hint">AI can make mistakes — always verify important information.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  let isStreaming=false,currentConvId=null,messageCount=0,currentDbSessionId=null;
+  const messagesEl=document.getElementById('messages');
+  const inputEl=document.getElementById('chat-input');
+  const sendBtn=document.getElementById('send-btn');
+  const welcomeEl=document.getElementById('welcome');
+  const scrollBtn=document.getElementById('scroll-btn');
+  const messagesWrap=document.getElementById('messages-wrap');
+
+  // Init marked
+  marked.setOptions({
+    highlight:(code,lang)=>{
+      if(lang&&hljs.getLanguage(lang))return hljs.highlight(code,{language:lang}).value;
+      return hljs.highlightAuto(code).value;
+    },breaks:true,gfm:true
+  });
+  const renderer=new marked.Renderer();
+  renderer.code=function(code,lang){
+    const hl=lang&&hljs.getLanguage(lang)?hljs.highlight(code,{language:lang}).value:hljs.highlightAuto(code).value;
+    const id='code-'+Math.random().toString(36).slice(2,8);
+    return `<pre><div class="code-header"><span>${lang||'code'}</span><button class="copy-code" onclick="copyCode('${id}')">Copy</button></div><code id="${id}" class="hljs">${hl}</code></pre>`;
+  };
+  marked.use({renderer});
+
+  // Scroll
+  messagesWrap.addEventListener('scroll',()=>{
+    const atBottom=messagesWrap.scrollHeight-messagesWrap.scrollTop-messagesWrap.clientHeight<100;
+    scrollBtn.classList.toggle('visible',!atBottom&&messageCount>0);
+  });
+  function scrollToBottom(smooth=true){messagesWrap.scrollTo({top:messagesWrap.scrollHeight,behavior:smooth?'smooth':'instant'})}
+
+  // Textarea
+  function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,180)+'px'}
+  function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
+
+  // Suggestions
+  function useSuggestion(el){
+    const strong=el.querySelector('strong').textContent.replace(/^.\s/,'');
+    inputEl.value=strong;autoResize(inputEl);inputEl.focus();addRipple(el);
+  }
+  function addRipple(el){
+    const r=document.createElement('span');r.className='ripple';
+    r.style.width=r.style.height='100px';r.style.left='50%';r.style.top='50%';r.style.marginLeft=r.style.marginTop='-50px';
+    el.style.position='relative';el.appendChild(r);setTimeout(()=>r.remove(),600);
+  }
+
+  // New chat
+  function newChat(){
+    messageCount=0;currentConvId=null;currentDbSessionId=null;messagesEl.innerHTML='';messagesEl.appendChild(welcomeEl);
+    welcomeEl.style.display='flex';document.getElementById('topbar-title').textContent='New conversation';
+    inputEl.value='';autoResize(inputEl);inputEl.focus();
+  }
+
+  // Add message
+  function addMessage(role,content,animate=true){
+    if(messageCount===0&&welcomeEl)welcomeEl.style.display='none';
+    messageCount++;
+    const row=document.createElement('div');row.className=`msg-row ${role}`;
+    if(!animate)row.style.animationDelay='0s';
+    const avatar=document.createElement('div');avatar.className=`msg-avatar ${role==='user'?'user':'ai'}`;
+    avatar.textContent=role==='user'?'U':'✦';
+    const wrap=document.createElement('div');wrap.className='msg-content';
+    const name=document.createElement('div');name.className='msg-name';
+    name.textContent=role==='user'?'You':'MAHADEV AI';
+    const body=document.createElement('div');body.className='msg-body';
+    if(role==='user')body.textContent=content;else body.innerHTML=marked.parse(content);
+    wrap.appendChild(name);wrap.appendChild(body);row.appendChild(avatar);row.appendChild(wrap);
+    messagesEl.appendChild(row);scrollToBottom();return{row,body};
+  }
+
+  // Typing indicator
+  function showTyping(){
+    const row=document.createElement('div');row.className='msg-row ai';row.id='typing-row';
+    const avatar=document.createElement('div');avatar.className='msg-avatar ai';avatar.textContent='✦';
+    const wrap=document.createElement('div');wrap.className='msg-content';
+    const name=document.createElement('div');name.className='msg-name';name.textContent='MAHADEV AI';
+    const body=document.createElement('div');body.className='msg-body';
+    body.innerHTML='<div class="typing-dot"><span></span><span></span><span></span></div>';
+    wrap.appendChild(name);wrap.appendChild(body);row.appendChild(avatar);row.appendChild(wrap);
+    messagesEl.appendChild(row);scrollToBottom();return row;
+  }
+  function removeTyping(){const t=document.getElementById('typing-row');if(t)t.remove()}
+
+  // Send
+  async function sendMessage(){
+    const text=inputEl.value.trim();
+    if(!text||isStreaming)return;
+    isStreaming=true;sendBtn.disabled=true;inputEl.value='';autoResize(inputEl);
+    addMessage('user',text);
+    showTyping();
+    try{
+      const resp=await fetch('/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:text, session_id: currentDbSessionId})
+      });
+      removeTyping();
+      if(!resp.ok){const err=await resp.json();addMessage('ai',`⚠️ Error: ${err.error||'Something went wrong.'}`);return}
+      const data=await resp.json();
+
+      // Store the DB session id returned by server
+      if(data.session_id){
+        currentDbSessionId=data.session_id;
+      }
+
+      // Update sidebar + topbar on first message of a conversation
+      if(!currentConvId){
+        currentConvId=Date.now();
+        const shortTitle=text.slice(0,36)+(text.length>36?'…':'');
+        addHistoryItem(currentConvId,shortTitle,currentDbSessionId);
+        document.getElementById('topbar-title').textContent=shortTitle;
+      }
+
+      await streamText(data.response||'');
+    }catch(e){
+      removeTyping();addMessage('ai','⚠️ Could not connect to server. Make sure your Flask app is running.');
+    }finally{isStreaming=false;sendBtn.disabled=false;inputEl.focus()}
+  }
+
+  // Stream effect
+  async function streamText(fullText){
+    messageCount++;
+    if(messageCount===1&&welcomeEl)welcomeEl.style.display='none';
+    const row=document.createElement('div');row.className='msg-row ai';
+    const avatar=document.createElement('div');avatar.className='msg-avatar ai';avatar.textContent='✦';
+    const wrap=document.createElement('div');wrap.className='msg-content';
+    const name=document.createElement('div');name.className='msg-name';name.textContent='MAHADEV AI';
+    const body=document.createElement('div');body.className='msg-body stream-cursor';
+    wrap.appendChild(name);wrap.appendChild(body);row.appendChild(avatar);row.appendChild(wrap);
+    messagesEl.appendChild(row);
+    let displayed='';
+    for(let i=0;i<fullText.length;i+=3){
+      displayed+=fullText.slice(i,i+3);
+      body.innerHTML=marked.parse(displayed);
+      scrollToBottom(false);await sleep(8);
+    }
+    body.classList.remove('stream-cursor');body.innerHTML=marked.parse(fullText);scrollToBottom();
+  }
+  function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+  // History
+  function addHistoryItem(id,title,dbSessionId){
+    const hist=document.getElementById('chat-history');
+    const item=document.createElement('div');item.className='history-item active';item.dataset.id=id;item.dataset.dbId=dbSessionId||'';
+    item.innerHTML=`<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> ${title}`;
+    hist.querySelectorAll('.history-item').forEach(i=>i.classList.remove('active'));
+    hist.insertBefore(item,hist.firstChild);
+  }
+
+  // Copy code
+  function copyCode(id){
+    const el=document.getElementById(id);if(!el)return;
+    navigator.clipboard.writeText(el.innerText).then(()=>showToast('Copied!'));
+  }
+
+  // Toast
+  function showToast(msg){
+    const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2000);
+  }
+
+  // Sidebar
+  function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+  }
+  document.getElementById('overlay').addEventListener('click',toggleSidebar);
+
+  inputEl.focus();
+</script>
+</body>
+</html>

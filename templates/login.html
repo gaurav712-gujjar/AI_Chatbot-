@@ -1,0 +1,434 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — MAHADEV AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-primary: #0d0d0d;
+      --bg-secondary: #161616;
+      --bg-tertiary: #1e1e1e;
+      --bg-hover: #252525;
+      --border: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.13);
+      --text-primary: #f0f0f0;
+      --text-secondary: #888;
+      --text-muted: #555;
+      --accent: #10a37f;
+      --accent-glow: rgba(16,163,127,0.25);
+      --accent-dim: rgba(16,163,127,0.08);
+      --radius: 14px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(16,163,127,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16,163,127,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-orb {
+      position: fixed;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(16,163,127,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -150px; left: -150px;
+      pointer-events: none;
+      z-index: 0;
+      animation: orbFloat 8s ease-in-out infinite;
+    }
+    .glow-orb-2 {
+      position: fixed;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(16,163,127,0.05) 0%, transparent 70%);
+      border-radius: 50%;
+      bottom: -100px; right: -100px;
+      pointer-events: none;
+      z-index: 0;
+      animation: orbFloat 10s ease-in-out infinite reverse;
+    }
+    @keyframes orbFloat {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(40px, 30px); }
+    }
+
+    .auth-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+      animation: fadeUp 0.5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(24px); }
+      to { opacity:1; transform: translateY(0); }
+    }
+
+    .auth-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-bright);
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
+    }
+
+    .auth-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 32px;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #10a37f, #1cc29f);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 0 32px var(--accent-glow), 0 0 64px rgba(16,163,127,0.1);
+      animation: floatLogo 3s ease-in-out infinite;
+    }
+    @keyframes floatLogo {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .auth-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      background: linear-gradient(135deg, #f0f0f0, #888);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .auth-subtitle {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* Flash messages */
+    .flash {
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .flash.error {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #f87171;
+    }
+    .flash.success {
+      background: rgba(16,163,127,0.1);
+      border: 1px solid rgba(16,163,127,0.25);
+      color: #34d399;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 7px;
+      letter-spacing: 0.3px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-bright);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .form-input::placeholder { color: var(--text-muted); }
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+      background: #222;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+      letter-spacing: 0.3px;
+      position: relative;
+      overflow: hidden;
+    }
+    .submit-btn:hover {
+      background: #0d9068;
+      box-shadow: 0 0 20px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+    .submit-btn:active { transform: translateY(0); }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-bright);
+    }
+    .divider span {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .auth-switch {
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--text-secondary);
+    }
+    .auth-switch a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.15s;
+    }
+    .auth-switch a:hover { opacity: 0.8; text-decoration: underline; }
+
+    @keyframes pulse {
+      0%,100% { opacity:1; box-shadow: 0 0 6px var(--accent); }
+      50% { opacity:0.6; box-shadow: 0 0 12px var(--accent); }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-orb"></div>
+  <div class="glow-orb-2"></div>
+
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">✦</div>
+        <div>
+          <div class="auth-title">Welcome back</div>
+          <div class="auth-subtitle">Sign in to MAHADEV AI</div>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">
+              {% if category == 'error' %}⚠️{% else %}✓{% endif %}
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="/login">
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <input type="email" name="email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="submit-btn">Sign in →</button>
+      </form>
+
+      <div class="divider"><span>OR</span></div>
+
+      <div class="auth-switch">
+        Don't have an account? <a href="/register">Create one</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html> -->
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In — MAHADEV AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #080b0f;
+      --surface:   #0e1318;
+      --surface2:  #141b22;
+      --border:    rgba(255,255,255,0.06);
+      --border-hi: rgba(99,210,175,0.3);
+      --text:      #e8edf2;
+      --text-2:    #7a8a99;
+      --text-3:    #3d4f60;
+      --green:     #63d2af;
+      --green-dk:  #3aaf8a;
+      --green-glow:rgba(99,210,175,0.18);
+      --green-dim: rgba(99,210,175,0.07);
+      --red:       #f06a6a;
+      --red-dim:   rgba(240,106,106,0.1);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+    #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+    .layout{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;height:100vh}
+
+    /* LEFT */
+    .left-panel{display:flex;flex-direction:column;justify-content:center;padding:60px 64px;border-right:1px solid var(--border);position:relative;overflow:hidden}
+    .left-panel::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(99,210,175,0.07) 0%,transparent 65%);top:-200px;left:-200px;pointer-events:none}
+    .brand{display:flex;align-items:center;gap:14px;margin-bottom:64px}
+    .brand-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--green),var(--green-dk));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 24px var(--green-glow);animation:breathe 4s ease-in-out infinite}
+    @keyframes breathe{0%,100%{box-shadow:0 0 24px var(--green-glow)}50%{box-shadow:0 0 40px rgba(99,210,175,0.35)}}
+    .brand-name{font-size:17px;font-weight:700;letter-spacing:-0.3px}
+    .hero-heading{font-size:clamp(34px,4vw,50px);font-weight:800;line-height:1.08;letter-spacing:-1.5px;margin-bottom:20px}
+    .hero-heading .accent{color:var(--green)}
+    .hero-sub{font-size:15px;color:var(--text-2);line-height:1.75;max-width:380px;font-weight:300}
+    .feature-list{margin-top:44px;display:flex;flex-direction:column;gap:16px}
+    .feature-item{display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--text-2)}
+    .feature-dot{width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);flex-shrink:0}
+
+    /* RIGHT */
+    .right-panel{display:flex;align-items:center;justify-content:center;padding:40px}
+    .form-card{width:100%;max-width:400px;animation:slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both}
+    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .form-card h2{font-size:27px;font-weight:700;letter-spacing:-0.6px;margin-bottom:6px}
+    .form-card>p{font-size:14px;color:var(--text-2);margin-bottom:36px;font-weight:300}
+    .flash{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;font-size:13.5px;font-weight:500;margin-bottom:24px;animation:flashIn 0.3s ease both}
+    @keyframes flashIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+    .flash.error{background:var(--red-dim);border:1px solid rgba(240,106,106,0.2);color:var(--red)}
+    .flash.success{background:var(--green-dim);border:1px solid var(--border-hi);color:var(--green)}
+    .field{margin-bottom:20px}
+    .field label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+    .field input{width:100%;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14.5px;font-weight:400;outline:none;transition:all 0.2s}
+    .field input::placeholder{color:var(--text-3)}
+    .field input:focus{border-color:var(--border-hi);background:var(--surface2);box-shadow:0 0 0 3px var(--green-dim)}
+    .submit-btn{width:100%;padding:14px;background:var(--green);color:#060d0a;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:8px;letter-spacing:-0.2px;display:flex;align-items:center;justify-content:center;gap:8px}
+    .submit-btn:hover{background:#7ae0be;box-shadow:0 8px 30px rgba(99,210,175,0.35);transform:translateY(-1px)}
+    .submit-btn:active{transform:none;box-shadow:none}
+    .divider{display:flex;align-items:center;gap:14px;margin:28px 0}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .divider span{font-size:11px;color:var(--text-3);letter-spacing:1px;text-transform:uppercase}
+    .switch-link{text-align:center;font-size:13.5px;color:var(--text-2)}
+    .switch-link a{color:var(--green);text-decoration:none;font-weight:600}
+    .switch-link a:hover{text-decoration:underline}
+    @media(max-width:768px){.layout{grid-template-columns:1fr}.left-panel{display:none}.right-panel{padding:24px;align-items:flex-start;padding-top:60px}}
+  </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="layout">
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-icon">✦</div>
+      <span class="brand-name">MAHADEV AI</span>
+    </div>
+    <h1 class="hero-heading">Intelligence<br>that <span class="accent">works</span><br>for you.</h1>
+    <p class="hero-sub">Powered by Llama 3.3 — ask anything, get sharp, structured answers in seconds.</p>
+    <div class="feature-list">
+      <div class="feature-item"><div class="feature-dot"></div> Real-time AI responses with streaming</div>
+      <div class="feature-item"><div class="feature-dot"></div> Code, writing, math &amp; research</div>
+      <div class="feature-item"><div class="feature-dot"></div> Full markdown &amp; syntax highlighting</div>
+      <div class="feature-item"><div class="feature-dot"></div> Conversation history per session</div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="form-card">
+      <h2>Welcome back</h2>
+      <p>Sign in to continue to your workspace</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+          <div class="flash {{ category }}">
+            <span>{% if category == 'error' %}⚠{% else %}✓{% endif %}</span>
+            {{ message }}
+          </div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+
+      <form method="POST" action="/login">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="you@example.com" required autocomplete="email"/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Enter your password" required autocomplete="current-password"/>
+        </div>
+        <button type="submit" class="submit-btn">
+          Sign in
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </form>
+
+      <div class="divider"><span>or</span></div>
+      <div class="switch-link">No account yet? <a href="/register">Create one free</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas=document.getElementById('bg-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,dots=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;buildDots()}
+  function buildDots(){dots=[];const cols=Math.ceil(W/60),rows=Math.ceil(H/60);for(let r=0;r<=rows;r++)for(let c=0;c<=cols;c++)dots.push({x:c*60,y:r*60,ox:c*60,oy:r*60,phase:Math.random()*Math.PI*2,speed:0.3+Math.random()*0.4,amp:2+Math.random()*3,op:0.05+Math.random()*0.12})}
+  function draw(t){ctx.clearRect(0,0,W,H);dots.forEach(d=>{d.x=d.ox+Math.sin(t*d.speed*0.001+d.phase)*d.amp;d.y=d.oy+Math.cos(t*d.speed*0.0007+d.phase)*d.amp;ctx.beginPath();ctx.arc(d.x,d.y,1.2,0,Math.PI*2);ctx.fillStyle=`rgba(99,210,175,${d.op})`;ctx.fill()});requestAnimationFrame(draw)}
+  window.addEventListener('resize',resize);resize();requestAnimationFrame(draw);
+</script>
+</body>
+</html>
